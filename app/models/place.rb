@@ -60,4 +60,9 @@ class Place
     end
     @location = Point.new(params[:geometry][:geolocation])
   end
+
+  def destroy
+    mongo_id = BSON::ObjectId.from_string(@id)
+    Place.collection.find(:_id => mongo_id).delete_one
+  end
 end
