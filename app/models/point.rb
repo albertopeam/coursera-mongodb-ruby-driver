@@ -24,7 +24,7 @@ class Point
 		end
 
 		def is_geo_json_point?(params)
-			params.has_key?(:type) && params.has_key?(:coordinates)
+			params[:type].present? && params[:coordinates].present?
 		end
 
 		def set_geo_json_point(params)

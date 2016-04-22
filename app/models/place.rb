@@ -24,6 +24,24 @@ class Place
     Place.collection.insert_many(hash)
   end
 
+  def Place.find_by_short_name(short_name)
+    Place.collection.find("address_components.short_name" => short_name)
+  end
+
+  def Place.to_places(collection_view)
+    places = []
+    collection_view.each do |hash|
+      places.push(Place.new(hash))
+    end
+    places
+  end
+
+  def Place.find(id)
+    bson_id = BSON::ObjectId.from_string(id)
+    hash = Place.collection.find(:_id => bson_id).first
+    Place.new(hash) if hash
+  end
+
   def initialize(params)
     @id = params[:_id].to_s
     @formatted_address = params[:formatted_address]
