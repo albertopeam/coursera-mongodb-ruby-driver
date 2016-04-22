@@ -1,14 +1,10 @@
 class Point
-  # include Mongoid::Document
-  # field :longitude, type: Integer
-  # field :latitude, type: Integer
   include ActiveModel::Model
 
 	attr_accessor :longitude, :latitude
 
 	@longitude = nil
 	@latitude = nil
-
 
 	def initialize(params)
 		set_coordinates(params)

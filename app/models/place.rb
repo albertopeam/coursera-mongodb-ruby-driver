@@ -1,7 +1,13 @@
 class Place
   include ActiveModel::Model
-  
+
+  attr_accessor :id, :formatted_address, :location, :address_components
+
   @@db = nil
+  @id = nil
+  @formatted_address = nil
+  @location = nil
+  @address_components = nil
 
   def Place.mongo_client
   	@@db ||= Mongoid::Clients.default
@@ -16,5 +22,16 @@ class Place
 		file = File.read(file_path)
     hash = JSON.parse(file)
     Place.collection.insert_many(hash)
+  end
+
+  def initialize(params)
+    @id = params[:_id].to_s
+    @formatted_address = params[:formatted_address]
+    @address_components = []
+    params[:address_components].each do |address| 
+      place = AddressComponent.new(address)
+      @address_components.push(place)
+    end
+    @location = Point.new(params[:geometry][:geolocation])
   end
 end
