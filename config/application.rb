@@ -27,5 +27,11 @@ module Places
 
     #bootstraps mongoid within applications -- like rails console
     Mongoid.load!('./config/mongoid.yml')
+
+    #which default ORM are we using with scaffold
+    #add  --orm none, mongoid, or active_record 
+    #    to rails generate cmd line to be specific
+    #config.generators {|g| g.orm :active_record}
+    #config.generators {|g| g.orm :mongoid}
   end
 end

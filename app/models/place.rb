@@ -1,5 +1,6 @@
 class Place
-  include Mongoid::Document
+  include ActiveModel::Model
+  
   @@db = nil
 
   def Place.mongo_client
