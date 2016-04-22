@@ -42,6 +42,14 @@ class Place
     Place.new(hash) if hash
   end
 
+  def Place.all(offset = 0, limit = 0)
+    places = []
+    Place.collection.find().skip(offset).limit(limit).each do |hash|
+      places.push(Place.new(hash))
+    end
+    places
+  end
+
   def initialize(params)
     @id = params[:_id].to_s
     @formatted_address = params[:formatted_address]
