@@ -13,4 +13,34 @@ class Photo
   	@@db
   end
 
+  def initialize(params=nil)
+  	@id = nil
+  	@location = nil
+  	@contents = nil
+  	if params
+  		@id = params[:_id].to_s
+  		@location = Point.new(params[:metadata][:location]) if params[:metadata][:location]	
+  	end
+  end
+
+  def persisted?
+  	!@id.nil?
+  end
+
+  def save
+  	if !persisted?
+  		gps = EXIFR::JPEG.new(@contents).gps
+  		location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)
+
+  		description = {:content_type=>"image/jpeg",
+               			 :metadata => {:location => location.to_hash}
+               			}
+			grid_file = Mongo::Grid::File.new(@contents.read, description)
+			id = Photo.mongo_client.database.fs.insert_one(grid_file)
+
+			@id = id.to_s
+			@location = location
+  	end
+  end
+
 end
