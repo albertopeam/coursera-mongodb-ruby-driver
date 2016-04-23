@@ -13,6 +13,16 @@ class Photo
   	@@db
   end
 
+  def Photo.all(skip=0, limit=nil)
+  	all = []
+  	if limit.nil?
+			all = Photo.mongo_client.database.fs.find.skip(skip).map{|doc| Photo.new(doc)}
+  	else
+  		all = Photo.mongo_client.database.fs.find.skip(skip).limit(limit).map{|doc| Photo.new(doc)}	
+  	end
+  	all
+  end
+
   def initialize(params=nil)
   	@id = nil
   	@location = nil
