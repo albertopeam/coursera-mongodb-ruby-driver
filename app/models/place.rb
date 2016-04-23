@@ -50,13 +50,68 @@ class Place
     places
   end
 
+  def Place.get_address_components(sort={}, offset=0, limit=nil)
+    #Place.collection.aggregate([
+                          #{:$group => {:_id => '$_id'}},
+                         # {:$unwind => '$address_component.types'},
+                          #{:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}},
+                          #{:$sort => sort},
+                          #{:$limit => limit}
+                        #])
+                        #,{:$unwind => '$address_component'}
+
+    Place.collection.find.aggregate([{:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}},{:$sort => sort},{:$limit => limit}])
+  end
+
+#convertir to_a para ver resultados
+  def Place.get_country_names
+    Place.collection.find.aggregate([
+                    {:$project => {:_id => false, "address_components.long_name" =>true, "address_components.types" => true}},
+                    {:$unwind => "$address_components.types"}
+                    ])
+  end
+
+  def Place.find_ids_by_country_code(country_code)
+    Place.collection.find.aggregate([
+                          {:$match => {"address_components.types" => {$eq => "country"},
+                                       "address_components.short_name" => {$eq => country_code}
+                                      }
+                          }
+                                    ])
+  end
+
+  def Place.create_indexes
+    Place.collection.indexes.create_one({"geometry.geolocation" => Mongo::Index::GEO2DSPHERE})
+  end
+
+  def Place.remove_indexes
+    Place.collection.indexes.drop_one("geometry.geolocation_2dsphere")
+  end
+
+  def Place.near(point, max_meters=0)
+    Place.collection.find("geometry.geolocation" => 
+                        {:$near => 
+                                  {:$geometry => point.to_hash, 
+                                   :$maxDistance => max_meters
+                                  }
+                        })
+  end
+
+  def near(max_meters=0)
+    places_json = Place.near(@location, max_meters)
+    places = Place.to_places(places_json)
+    places
+  end
+
   def initialize(params)
     @id = params[:_id].to_s
     @formatted_address = params[:formatted_address]
     @address_components = []
-    params[:address_components].each do |address| 
-      place = AddressComponent.new(address)
-      @address_components.push(place)
+    if params[:address_components]
+      params[:address_components].each do |address| 
+        place = AddressComponent.new(address)
+        @address_components.push(place)
+      end  
     end
     @location = Point.new(params[:geometry][:geolocation])
   end
