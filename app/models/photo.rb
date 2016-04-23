@@ -23,6 +23,11 @@ class Photo
   	all
   end
 
+  def Photo.find(id)
+  	photo_hash = Photo.mongo_client.database.fs.find(:_id => BSON::ObjectId.from_string(id)).first
+  	Photo.new(photo_hash)
+  end
+
   def initialize(params=nil)
   	@id = nil
   	@location = nil
