@@ -25,7 +25,11 @@ class Photo
 
   def Photo.find(id)
   	photo_hash = Photo.mongo_client.database.fs.find(:_id => BSON::ObjectId.from_string(id)).first
-  	Photo.new(photo_hash)
+  	if photo_hash
+  		Photo.new(photo_hash)
+  	else
+  		nil
+  	end
   end
 
   def initialize(params=nil)
@@ -56,6 +60,14 @@ class Photo
 			@id = id.to_s
 			@location = location
   	end
+  end
+
+  def contents
+  	
+  end
+
+  def destroy
+  	Photo.mongo_client.database.fs.find(:_id => BSON::ObjectId.from_string(@id)).delete_one
   end
 
 end
