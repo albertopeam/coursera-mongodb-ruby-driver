@@ -120,6 +120,8 @@ class Photo
 				@place = BSON::ObjectId.from_string(object)
   		when object.is_a?(BSON::ObjectId)
   			@place = object
+  		else
+  			@place = nil
   	end
   end
 
