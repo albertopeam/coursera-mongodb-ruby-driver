@@ -67,7 +67,6 @@ class Place
     Place.collection.aggregate(pipeline)
   end
 
-#convertir to_a para ver resultados
   def Place.get_country_names
     Place.collection.find.aggregate([
                     {:$project => {:_id => false, "address_components.long_name" =>true, "address_components.types" => true}},
@@ -77,11 +76,10 @@ class Place
 
   def Place.find_ids_by_country_code(country_code)
     Place.collection.find.aggregate([
-                          {:$match => {"address_components.types" => {$eq => "country"},
-                                       "address_components.short_name" => {$eq => country_code}
-                                      }
-                          }
-                                    ])
+                          {:$match => {"address_components.types" => "country",
+                                       "address_components.short_name" => country_code}},
+                          {:$project => {:_id => true}}])
+                          .map {|doc| doc[:_id].to_s}
   end
 
   def Place.create_indexes
