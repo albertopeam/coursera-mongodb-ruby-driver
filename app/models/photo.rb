@@ -1,3 +1,8 @@
+# Photo
+#
+#
+# place => place_id
+#
 class Photo
 
 	include ActiveModel::Model
@@ -8,6 +13,7 @@ class Photo
 	@id = nil
 	@location = nil
 	@contents = nil
+	@place = nil
 
 	def Photo.mongo_client
   	@@db ||= Mongoid::Clients.default
@@ -37,9 +43,11 @@ class Photo
   	@id = nil
   	@location = nil
   	@contents = nil
+  	@place = nil
   	if params
   		@id = params[:_id].to_s
   		@location = Point.new(params[:metadata][:location]) if params[:metadata][:location]	
+  		@place = params[:metadata][:place] if params[:metadata][:place]
   	end
   end
 
@@ -52,7 +60,8 @@ class Photo
   		gps = EXIFR::JPEG.new(@contents).gps
 			@location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)
 			description = {:content_type=>"image/jpeg",
-	             			 :metadata => {:location => location.to_hash}
+	             			 :metadata => {:location => location.to_hash,
+	             			 							 :place => @place}
 	             			}
 			@contents.rewind
 			grid_file = Mongo::Grid::File.new(@contents.read, description)
@@ -61,7 +70,8 @@ class Photo
 		else
 			new_location = Point.new(:lng => @location.longitude, :lat => @location.latitude)
 			description = {:content_type=>"image/jpeg",
-	             			 :metadata => {:location => new_location.to_hash}
+	             			 :metadata => {:location => new_location.to_hash,
+	             			 							 :place => @place}
 	             			}
 			grid_file = Photo.mongo_client.database.fs.find(:_id => BSON::ObjectId.from_string(@id))
 			grid_file.update_one(description)			
@@ -91,6 +101,25 @@ class Photo
   		return result.first[:_id]
   	else
   		return nil	
+  	end
+  end
+
+  def place
+  	if @place
+  		return Place.find(@place.to_s)
+  	else
+  		return nil
+  	end
+  end
+
+  def place=(object)
+  	case
+			when object.is_a?(Place)
+  			@place = BSON::ObjectId.from_string(object.id)
+  		when object.is_a?(String)
+				@place = BSON::ObjectId.from_string(object)
+  		when object.is_a?(BSON::ObjectId)
+  			@place = object
   	end
   end
 
