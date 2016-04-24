@@ -70,8 +70,10 @@ class Place
   def Place.get_country_names
     Place.collection.find.aggregate([
                     {:$project => {:_id => false, "address_components.long_name" =>true, "address_components.types" => true}},
-                    {:$unwind => "$address_components.types"}
-                    ])
+                    {:$unwind => "$address_components"},
+                    {:$match => {"address_components.types" => "country"}},
+                    {:$group => {:_id=>{:long_name=>"$address_components.long_name"}}}
+                    ]).to_a.map {|h| h[:_id]}
   end
 
   def Place.find_ids_by_country_code(country_code)
