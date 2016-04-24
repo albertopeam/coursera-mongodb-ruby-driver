@@ -72,7 +72,7 @@ class Place
                     {:$project => {:_id => false, "address_components.long_name" =>true, "address_components.types" => true}},
                     {:$unwind => "$address_components"},
                     {:$match => {"address_components.types" => "country"}},
-                    {:$group => {:_id=>{:long_name=>"$address_components.long_name"}}}
+                    {:$group => {:_id => "$address_components.long_name"}}
                     ]).to_a.map {|h| h[:_id]}
   end
 
