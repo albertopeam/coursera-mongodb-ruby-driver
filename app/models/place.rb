@@ -120,4 +120,31 @@ class Place
     mongo_id = BSON::ObjectId.from_string(@id)
     Place.collection.find(:_id => mongo_id).delete_one
   end
+
+  def photos(offset=0, limit=nil)
+    photos_hash = []
+    if limit
+        photos_hash = Photo.find_photos_for_place(@id).skip(offset).limit(limit)
+    else
+        photos_hash = Photo.find_photos_for_place(@id).skip(offset)
+    end
+    photos = []
+    photos_hash.each do |hash|
+      photos.push(Photo.new(hash))
+    end
+    photos
+  end
+
+
+
+
+
+
+
+
+
+
+
+
+
 end
