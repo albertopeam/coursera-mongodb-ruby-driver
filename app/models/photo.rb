@@ -65,10 +65,6 @@ class Photo
   	@id
   end
 
-  def contents_bridge
-  	@contents
-  end
-
   def contents 
   	f = Photo.mongo_client.database.fs.find_one({:_id => BSON::ObjectId.from_string(@id)})
   	if f 
@@ -82,6 +78,16 @@ class Photo
 
   def destroy
   	Photo.mongo_client.database.fs.find(:_id => BSON::ObjectId.from_string(@id)).delete_one
+  end
+
+
+  def find_nearest_place_id(max_meters)
+  	result = Place.near(@location, max_meters).projection(:_id => 1).limit(1)
+  	if result.count > 0
+  		return result.first[:_id]
+  	else
+  		return nil	
+  	end
   end
 
 end
