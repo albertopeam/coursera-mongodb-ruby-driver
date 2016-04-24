@@ -52,7 +52,8 @@ class Place
 
   def Place.get_address_components(sort={}, offset=0, limit=nil)
     Place.collection.aggregate([
-                                {:$unwind => '$address_components'}
+                                {:$unwind => '$address_components'},
+                                {:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}}
                               ])
     #Place.collection.aggregate([
                           #{:$group => {:_id => '$_id'}},
