@@ -51,20 +51,20 @@ class Place
   end
 
   def Place.get_address_components(sort={}, offset=0, limit=nil)
-    Place.collection.aggregate([
-                                {:$unwind => '$address_components'},
-                                {:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}}
-                              ])
-    #Place.collection.aggregate([
-                          #{:$group => {:_id => '$_id'}},
-                         # {:$unwind => '$address_component.types'},
-                          #{:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}},
-                          #{:$sort => sort},
-                          #{:$limit => limit}
-                        #])
-                        #,{:$unwind => '$address_component'}
+    pipeline = []
+    pipeline.push({:$unwind => '$address_components'})
+    pipeline.push({:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}})
+    if !sort.empty?
+      pipeline.push({:$sort => sort})
+    end
+    if offset > 0
+      pipeline.push({:$skip => offset})
+    end
+    if !limit.nil?
+      pipeline.push({:$limit => limit})
+    end
 
-    #Place.collection.find.aggregate([{:$project => {:_id => true, :address_components => true, :formatted_address => true, "geometry.geolocation" => true}},{:$sort => sort},{:$limit => limit}])
+    Place.collection.aggregate(pipeline)
   end
 
 #convertir to_a para ver resultados
@@ -138,17 +138,4 @@ class Place
     end
     photos
   end
-
-
-
-
-
-
-
-
-
-
-
-
-
 end
