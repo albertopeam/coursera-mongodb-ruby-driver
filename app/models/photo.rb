@@ -39,6 +39,25 @@ class Photo
   	end
   end
 
+  #
+  # find_photos_for_place
+  # id can be a String or a BSON::ObjectId
+  #
+  def Photo.find_photos_for_place(id)
+  	place_id = nil
+  	case
+  		when id.is_a?(String)
+				place_id = BSON::ObjectId.from_string(id)
+  		when id.is_a?(BSON::ObjectId)
+  			place_id = id
+  	end
+  	if place_id
+  		return Photo.mongo_client.database.fs.find(:"metadata.place" => place_id)
+  	else
+  		return nil	
+  	end
+  end
+
   def initialize(params=nil)
   	@id = nil
   	@location = nil
