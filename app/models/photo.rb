@@ -1,5 +1,6 @@
 class Photo
 
+	include ActiveModel::Model
 	attr_accessor :id, :location
 	attr_writer :contents
 
@@ -49,21 +50,34 @@ class Photo
   def save
   	if !persisted?
   		gps = EXIFR::JPEG.new(@contents).gps
-  		location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)
+  		@location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)
 
   		description = {:content_type=>"image/jpeg",
                			 :metadata => {:location => location.to_hash}
                			}
+
+			@contents.rewind
 			grid_file = Mongo::Grid::File.new(@contents.read, description)
 			id = Photo.mongo_client.database.fs.insert_one(grid_file)
 
 			@id = id.to_s
-			@location = location
   	end
+  	@id
   end
 
-  def contents
-  	
+  def contents_bridge
+  	@contents
+  end
+
+  def contents 
+  	f = Photo.mongo_client.database.fs.find_one({:_id => BSON::ObjectId.from_string(@id)})
+  	if f 
+      buffer = ""
+      f.chunks.reduce([]) do |x,chunk| 
+          buffer << chunk.data.data 
+      end
+      return buffer
+    end 
   end
 
   def destroy
