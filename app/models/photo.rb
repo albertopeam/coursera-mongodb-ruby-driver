@@ -48,19 +48,23 @@ class Photo
   end
 
   def save
-  	if !persisted?
+  	if !persisted?	
   		gps = EXIFR::JPEG.new(@contents).gps
-  		@location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)
-
-  		description = {:content_type=>"image/jpeg",
-               			 :metadata => {:location => location.to_hash}
-               			}
-
+			@location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)
+			description = {:content_type=>"image/jpeg",
+	             			 :metadata => {:location => location.to_hash}
+	             			}
 			@contents.rewind
 			grid_file = Mongo::Grid::File.new(@contents.read, description)
 			id = Photo.mongo_client.database.fs.insert_one(grid_file)
-
 			@id = id.to_s
+		else
+			new_location = Point.new(:lng => @location.longitude, :lat => @location.latitude)
+			description = {:content_type=>"image/jpeg",
+	             			 :metadata => {:location => new_location.to_hash}
+	             			}
+			grid_file = Photo.mongo_client.database.fs.find(:_id => BSON::ObjectId.from_string(@id))
+			grid_file.update_one(description)			
   	end
   	@id
   end
