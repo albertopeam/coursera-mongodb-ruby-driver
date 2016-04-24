@@ -138,4 +138,8 @@ class Place
     end
     photos
   end
+
+  def persisted? 
+    !@id.nil?
+  end
 end
